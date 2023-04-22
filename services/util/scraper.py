@@ -1,5 +1,5 @@
-from bs4 import BeautifulSoup
 import requests as rq
+from bs4 import BeautifulSoup
 import entities.Folder as Folder
 from services.util.cookies_info import cookies, headers
 

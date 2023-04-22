@@ -1,4 +1,5 @@
 from services.util.jsonutil import obj_to_json, write_json_file, load_json_file_as_dict
+import re
 
 
 class Folder:
@@ -29,6 +30,9 @@ class Folder:
                 return False
 
         return True
+
+    def __lt__(self, other):
+        return self.name < other.name
 
     def add_folder(self, folder):
         self.folder_list.append(folder)
@@ -61,14 +65,33 @@ class Folder:
             if folder_exists.name != 'empty':
                 child_folder.compare_to(folder_exists)
 
+    def get_folder_type(self):
+        unity_regex = re.compile('(u|unidade)\s?\d', flags=re.IGNORECASE)
+        match_obj = unity_regex.search(self.name)
+        if match_obj:
+            match_text = match_obj.group()
+            number_index = len(match_text) - 1
+            unity_number = match_text[number_index]
+            return f"Unidade {str(unity_number)}"
+        return self.name
+
     def print_folder_content(self):
         if len(self.video_list) > 0:
-            print('-'*18, end='')
             print(f"{str(len(self.video_list)):>2}")
+        folder_and_vid = len(self.video_list) + len(self.folder_list)
+        if folder_and_vid == 0:
+            print(f"{'-'*33}NO VIDEO FOUND{'-'*33}")
+        for folder in self.folder_list:
+            folder.name = folder.get_folder_type()
+        self.folder_list.sort()
         for folder in self.folder_list:
             print()
-            print(f"{folder.name + ' ' + '-'*30:.30s}", end='')
-            folder.print_folder_content()
+            if len(folder.video_list) > 0:
+                print(f"{folder.name + ' ' + '-'*78:.78s}", end='')
+                folder.print_folder_content()
+            else:
+                print(folder.name)
+                folder.print_folder_content()
 
     def to_json_obj(self):
         return obj_to_json(self)
